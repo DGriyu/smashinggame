@@ -11,7 +11,7 @@ import android.graphics.Paint;
 public class GameLoopThread extends Thread{
     private GameView view;
     private boolean running = false;
-    private static final long FPS = 30;
+    private static final long FPS = 60;
 
     public GameLoopThread(GameView view) {
         this.view = view;
