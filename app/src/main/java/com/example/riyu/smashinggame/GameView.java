@@ -8,8 +8,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.Random;
 
 /**
  * Created by Riyu on 2/13/15.
@@ -19,13 +22,14 @@ public class GameView extends SurfaceView {
     private SurfaceHolder  holder;
     private GameLoopThread gameLoopThread;
     private int dishes = 100;
-    private int score = 0;
+    private int score;
     private plates plate;
     long init = System.currentTimeMillis();
 
     public GameView(Context context) {
         super(context);
         plate = new plates();
+        score = 0;
         gameLoopThread = new GameLoopThread(this);
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
@@ -62,8 +66,12 @@ public class GameView extends SurfaceView {
 
     @Override
     public void onDraw(Canvas canvas) {
+        String scoring = String.format("Score: %d", score);
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(20);
+        canvas.drawText(scoring, 600, 25, paint);
         if (plate.getStart_plate() == true){
-            Paint paint = new Paint();
             paint.setColor(Color.BLACK);
             if (plate.shatter(canvas.getHeight())){
                 plate.setPlate_state(false);
@@ -90,6 +98,24 @@ public class GameView extends SurfaceView {
             canvas.drawOval(r, r.getPaint());
         }
         canAdd = true;*/
+    }
+
+    @Override
+    public boolean onTouchEvent (MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        if (((x >= plate.getX_position()) && (x <= plate.getX_position() + 200)) && ((y >= plate.getY_position()) && y <= plate.getY_position() + 100)  && plate.getPlate_state()) {
+
+            Random random = new Random();
+            plate.setPlate_state(false);
+            score++;
+            //RectFP rectFP = new RectFP(x - 20, y - 20, x + 20, y + 20);
+            //rectFP.setPaint(paints.get(random.nextInt(4)));
+            //circles.add(rectFP);
+        }
+
+        return super.onTouchEvent(event);
     }
 
     public class plates {
