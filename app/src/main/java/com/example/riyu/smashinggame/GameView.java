@@ -1,13 +1,20 @@
 package com.example.riyu.smashinggame;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -81,7 +88,8 @@ public class GameView extends SurfaceView {
             timeout--;
         }
         if (dishes <= 0){
-            //endgame
+            gameLoopThread.setRunning(false);
+            build_dialog();
         }
         if (plates_out.size() < 5  && (timeout == 0 ) &&(plate_stack.size() > 0)){
             plates_out.add(plate_stack.get(0));
@@ -126,6 +134,26 @@ public class GameView extends SurfaceView {
             canvas.drawOval(r, r.getPaint());
         }
         canAdd = true;*/
+    }
+
+    public void build_dialog(){
+
+        DialogFragment dialog = new YesNoDialog();
+        Bundle args = new Bundle();
+        long millis = System.currentTimeMillis() - init;
+        int seconds = (int) (millis / 1000);
+        int minutes = seconds / 60;
+        seconds = seconds % 60;
+        String passed_time = String.format("%d:%02d", minutes, seconds);
+        args.putString("title", "Game Over");
+        String scoring = String.format("with a score of %d", score);
+        String message = ("You finished " + scoring + " and a time of " + passed_time + ".");
+        args.putString("message", message);
+        dialog.setArguments(args);
+        Fragment f = new Fragment();
+        dialog.setTargetFragment(f, 0);
+        dialog.show(f.getFragmentManager(), "tag");
+        gameLoopThread.setRunning(false);
     }
 
     @Override
@@ -213,6 +241,43 @@ public class GameView extends SurfaceView {
             return ((max - (y_position + 100)) <= 10);
         }
 
+    }
+
+    public class YesNoDialog extends DialogFragment
+    {
+        public YesNoDialog()
+        {
+
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState)
+        {
+            Bundle args = getArguments();
+            String title = args.getString("title", "");
+            String message = args.getString("message", "");
+
+            return new AlertDialog.Builder(getActivity())
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            getTargetFragment().onActivityResult(getTargetRequestCode(), getActivity().RESULT_OK, null);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            getTargetFragment().onActivityResult(getTargetRequestCode(), getActivity().RESULT_CANCELED, null);
+                        }
+                    })
+                    .create();
+        }
     }
 
 }
